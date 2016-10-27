@@ -3,7 +3,6 @@ package com.example.administrator.fresco_glide;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -12,7 +11,8 @@ import com.example.administrator.fresco_glide.apiRequset.ApiRequestHelper;
 import com.example.administrator.fresco_glide.entity.AllareasRankInfo;
 import com.facebook.drawee.view.SimpleDraweeView;
 
-import rx.Observer;
+import rx.Observable;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private SimpleDraweeView mPic;
     private Button btn;
+    Observable<AllareasRankInfo> observable;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +57,38 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });*/
 
-                ApiRequestHelper.getAllareasRankApi().getAllareasRanks("all-03-23.json")
+                observable = ApiRequestHelper.getAllareasRankApi().getAllareasRanks("all-03-23.json");
+                observable
+                        .subscribeOn(Schedulers.io())
+                        .flatMap(new Func1<AllareasRankInfo, Observable<AllareasRankInfo.RankBean.ListBean>>() {
+                            @Override
+                            public Observable<AllareasRankInfo.RankBean.ListBean> call(AllareasRankInfo allareasRankInfo) {
+                                return observable.from(allareasRankInfo.getRank().getList());
+                            }
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Subscriber<AllareasRankInfo.RankBean.ListBean>() {
+                            @Override
+                            public void onCompleted() {
+                                Toast.makeText(getApplicationContext(), "onCompleted", Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Toast.makeText(getApplicationContext(), "onError", Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onNext(AllareasRankInfo.RankBean.ListBean listBean) {
+                                Toast.makeText(getApplicationContext(), "onNext", Toast.LENGTH_LONG).show();
+                                if (!TextUtils.isEmpty(listBean.getPic())) {
+                                    Toast.makeText(getApplicationContext(), listBean.getPic(), Toast.LENGTH_LONG).show();
+                                    mPic.setImageURI(listBean.getPic());
+                                }
+                            }
+                        });
+
+             /*   ApiRequestHelper.getAllareasRankApi().getAllareasRanks("all-03-23.json")
                         .subscribeOn(Schedulers.io())
                         .map(new Func1<AllareasRankInfo, String>() {
                             @Override
@@ -84,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                                 if (!TextUtils.isEmpty(s))
                                     mPic.setImageURI(s);
                             }
-                        });
+                        });*/
             }
         });
 

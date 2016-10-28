@@ -5,8 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.administrator.fresco_glide.apiRequset.ApiRequestHelper;
 import com.example.administrator.fresco_glide.entity.AllareasRankInfo;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -23,11 +25,13 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDraweeView mPic;
     private Button btn;
     Observable<AllareasRankInfo> observable;
+    private ImageView mPic1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mPic = (SimpleDraweeView) findViewById(R.id.pic);
+        mPic1 = (ImageView) findViewById(R.id.pic1);
         btn = (Button) findViewById(R.id.btn);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                                 if (!TextUtils.isEmpty(listBean.getPic())) {
                                     Toast.makeText(getApplicationContext(), listBean.getPic(), Toast.LENGTH_LONG).show();
                                     mPic.setImageURI(listBean.getPic());
+                                    Glide.with(MainActivity.this).load(listBean.getPic()).into(mPic1);
                                 }
                             }
                         });
